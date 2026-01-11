@@ -1,177 +1,175 @@
-Cypher Bank – Phishing-Led SOC Investigation
-Project Overview
+#   Cypher Bank – Phishing-Led SOC Investigation
 
-This repository documents a complete, end-to-end Security Operations Centre (SOC) investigation of a phishing-led attack simulation conducted against a fictional financial institution, Cypher Bank Limited.
+---
 
-The project mirrors real-world SOC investigation practices used in regulated financial environments and demonstrates how a SOC analyst detects, correlates, investigates, and validates phishing incidents using Splunk SIEM and multi-source security telemetry.
+##   Project Overview
 
-The investigation focuses on detection, validation, and incident scoping, rather than exploitation, to reflect professional SOC workflows.
+This repository documents a complete, end-to-end **Security Operations Centre (SOC)** investigation of a phishing-led attack simulation conducted against a fictional financial institution, **Cypher Bank Limited**.
+
+The project mirrors real-world SOC investigation practices used in regulated financial environments and demonstrates how a SOC analyst detects, correlates, investigates, and validates phishing incidents using **Splunk SIEM** and multi-source security telemetry.
+
+The investigation focuses on **detection, validation, and incident scoping**, rather than exploitation, to reflect professional SOC workflows.
 
 A full written investigation report is provided as a PDF and aligns directly with this README.
 
-SOC Architecture & Telemetry Overview
+---
+
+##   SOC Architecture & Telemetry Overview
 
 The investigation was conducted within a controlled SOC lab environment designed to simulate enterprise-grade security monitoring.
 
-Telemetry Sources
+### Telemetry Sources
 
-Windows Endpoint Telemetry
+**Windows Endpoint Telemetry**
+- Collected via **Sysmon**
+- Process creation, command-line execution, user context, and network activity
 
-Collected via Sysmon
+**Network & Firewall Logs**
+- Collected via **pfSense**
+- Egress traffic visibility and firewall event monitoring
 
-Process creation, command-line execution, and user context
+**Intrusion Detection**
+- Collected via **Suricata IDS**
+- HTTP requests, DNS queries, and protocol-level inspection
 
-Network & Firewall Logs
+**Email Telemetry**
+- Collected via **hMailServer** and **GoPhish**
+- Email delivery, phishing campaign execution, and user interaction tracking
 
-Collected via pfSense
+A full architecture diagram is available in:
+`02-Project-Architecture/`
 
-Egress traffic and firewall visibility
+---
 
-Intrusion Detection
+##   Attack Simulation Summary
 
-Alerts generated via Suricata IDS
+The phishing simulation was intentionally scoped to prioritise **SOC investigation and validation**, rather than attacker exploitation.
 
-Email Infrastructure
+Observed activity included:
 
-Internal mail delivery via hMailServer
+- Phishing email delivered to internal Cypher Bank mailboxes
+- User interaction observed (email opened and phishing link clicked)
+- Credential harvesting page accessed
+- No malware payload execution detected
+- No lateral movement observed
+- No endpoint compromise identified
 
-Phishing campaign orchestration via GoPhish
+The simulation was intentionally stopped at credential harvesting to maintain focus on SOC investigation, validation, and scoping workflows.
 
-Central SIEM
+---
 
-All telemetry aggregated, correlated, and investigated in Splunk SIEM
+##   Investigation Methodology
 
-Full architecture diagram and explanation available in:
-02-Project-Architecture/Joseph-Cypher Bank Project-Architectural design.pdf
+The investigation followed a structured **Security Operations Centre (SOC)** methodology aligned with real-world blue team practices.
 
-Attack Simulation Summary
+The objective was to validate a phishing-led attack through **evidence-based correlation**, ensuring no alert or telemetry source was analysed in isolation.
 
-The simulated attack replicated a realistic phishing scenario targeting internal Cypher Bank users.
+### SOC Workflow Phases
 
-Phishing email delivered to internal Cypher Bank mailboxes
+- Detection  
+- Triage  
+- Correlation  
+- Investigation  
+- Response  
+- Review  
 
-User interaction observed (email opened and link clicked)
+Email telemetry was analysed first to confirm phishing delivery and user interaction. Findings were then correlated with endpoint and network telemetry within defined time windows to validate attacker activity and eliminate false positives.
 
-Credential harvesting page accessed
+All analysis was conducted using **manual correlation**, reflecting environments without SOAR automation while remaining automation-ready for future scaling.
 
-No malware payload execution detected
+---
 
-No lateral movement observed
+##   Artifacts & Evidence Analysis
 
-No endpoint compromise identified
+Multiple forensic artifacts were identified and validated across email, endpoint, and network telemetry sources.
 
-The simulation was intentionally stopped at credential harvesting to prioritise SOC investigation, validation, and scoping workflows.
+### Key Artifacts Reviewed
 
-Investigation Methodology
+- Phishing URLs accessed by affected users identified via **Suricata HTTP logs** and **DNS queries**
+- Source and destination IP addresses associated with outbound connections
+- Ports and protocols (e.g. **TCP 443**, **DNS 53**) confirming encrypted outbound communication
+- Email sender domain and internal sender identity validated via **mail server logs**
+- Endpoint execution evidence from **Sysmon**, including process creation and network activity
 
-The SOC investigation followed a structured, analyst-driven workflow, aligned with SOC Level 2 operational practices.
-
-Investigation Steps
-
-Validation of log ingestion and data health across all telemetry sources
-
-Timeline reconstruction across endpoint, network, and email logs
-
-Endpoint process analysis using Sysmon process creation events
-
-Network traffic and IDS alert inspection using Suricata and pfSense
-
-Authentication attempt analysis for harvested credentials
-
-Evidence correlation and incident scoping
-
-All Splunk searches used during this investigation are documented in:
-06-SPL-Queries/SPL-Queries.md
-
-MITRE ATT&CK Mapping
-
-Observed activity was mapped to the MITRE ATT&CK framework to align findings with industry-standard threat classification.
-
-Techniques Observed
-
-T1566 – Phishing
-
-T1071.004 – Application Layer Protocol (HTTP)
-
-Full MITRE mapping and IOC documentation available in:
-05-IOCs-and-MITRE/MITRE-Mapping.md
-
-Evidence & Dashboards
-
-This repository includes validated investigation evidence captured directly from Splunk during the investigation.
-
-Included Evidence
-
-SOC phishing investigation overview dashboard
-
-Endpoint process creation events (Sysmon Event ID 1)
-
-Network and IDS correlation results
-
-Email delivery and user interaction confirmation
+All artifacts were validated through **cross-correlation in Splunk**, ensuring accuracy and preventing reliance on a single alert or data source.
 
 Evidence screenshots are located in:
-04-Evidence-Screenshots/
+`04-Evidence-Screenshots/`
 
-Mitigation Actions
+---
 
-Based on the investigation findings, the following mitigation actions were identified and applied:
+##   Response & Mitigation Actions
 
-Incident contained through investigation and validation
+Upon confirmation of credential harvesting activity, the following response actions were executed:
 
-No endpoint isolation required due to absence of compromise
+- Impacted user accounts secured and credentials reset
+- Active sessions revoked to prevent unauthorised access
+- Email activity reviewed for forwarding rules or mailbox abuse
+- Endpoint telemetry validated to confirm **no malicious payload execution**
+- Continued monitoring enabled for affected users and associated IP addresses
+- Phishing awareness reinforcement conducted
 
-No password resets required due to lack of authentication attempts
+No evidence of lateral movement or post-exploitation activity was observed.
 
-Phishing campaign terminated after confirmation of user interaction
+---
 
-Incident documented and closed following SOC procedures
+##   Mitigation & Hardening Measures
 
-Lessons Learned
+Post-incident mitigation focused on reducing both likelihood and impact of future phishing attempts:
 
-Phishing remains an effective initial access vector
+- Enforcement of **Multi-Factor Authentication (MFA)** using conditional access controls
+- Improved SOC visibility through tighter correlation across email, endpoint, and network telemetry
+- Reinforced user awareness around phishing identification and reporting
+- Validation of endpoint integrity following credential exposure
+- Refinement of detection dashboards and verification of logging coverage
 
-User interaction does not automatically result in endpoint compromise
+These measures strengthened both **preventive** and **detective** security controls.
 
-Centralised telemetry enables rapid incident validation
+---
 
-Early investigation reduces operational and security impact
+##   Lessons Learned & Recommendations
 
-Clear separation between detection and exploitation improves SOC realism
+Key lessons identified during the investigation align with **NIST Cybersecurity Framework (CSF)** principles:
 
-Recommendations
+- **Identify:** Comprehensive telemetry visibility is critical for accurate investigations
+- **Protect:** MFA significantly reduces credential abuse risk
+- **Detect:** Multi-source correlation increases investigative confidence
+- **Respond:** Rapid containment prevents escalation
+- **Recover:** Monitoring and process refinement close the incident response loop
 
-Strengthen phishing awareness training for internal users
+### Recommendations
 
-Enhance email filtering and phishing detection controls
+- Implement enterprise email authentication (**SPF, DKIM, DMARC**)
+- Enforce MFA for email and remote access
+- Formalise SOC incident response playbooks and escalation procedures
+- Enhance automated alert correlation to reduce **MTTR**
 
-Monitor for delayed credential misuse post-incident
+---
 
-Expand automated correlation rules for phishing indicators
+##   MITRE ATT&CK Mapping
 
-Conduct regular SOC readiness simulations
+Observed activity was mapped to the **MITRE ATT&CK** framework to align findings with industry-standard threat classification:
 
-Outcome & SOC Assessment
+- **T1566** – Phishing  
+- **T1071.004** – Application Layer Protocol (HTTP)
 
-Phishing activity successfully detected and investigated
+Full mapping is available in:
+`05-IOCs-and-MITRE/`
 
-Credential harvesting activity confirmed
+---
 
-No post-click execution or lateral movement identified
+##   SPL Queries & Investigation Searches
 
-Incident contained through structured SOC investigation
+All Splunk searches used during the investigation are fully documented in:
 
-Demonstrates SOC Level 2 investigation capability
+`06-SPL-Queries/SPL-Queries.md`
 
-Supporting Documentation
+These queries support validation, correlation, and evidence generation.
 
-Full Investigation Report (PDF)
-SOC_SPL_Wall_Sheet_FULL_Thorough_Investigation_Correlation_A4.pdf
+---
 
-SOC Architecture Diagram (PDF)
-02-Project-Architecture/Joseph-Cypher Bank Project-Architectural design.pdf
-
-Disclaimer
+##   Disclaimer
 
 This project was conducted in a controlled lab environment using fictional entities.
-No real organisations, users, or production systems were involved.
+
+No real organisation, users, or production systems were involved.
